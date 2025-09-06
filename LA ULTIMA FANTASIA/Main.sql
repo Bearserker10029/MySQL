@@ -34,41 +34,64 @@ check(Precisionmagia between 0 and 100),
 add constraint checktipo
 check(Tipo='Fisico' or Tipo='Magico');
 
-create table if not exists Heroes(
+create table if not exists Rol(
+	Rolid int,
+    Rolnombre varchar(20),
+    primary key (Rolid)
+);
+
+create table if not exists Personaje(
+	Personajeid int auto_increment,
+    Rolid int not null,
+    Genero char(1) not null,
+    Puntosdeexperiencia int not null,
+    foreign key (Rolid) references Rol(Rolid),
+    primary key (Personajeid)
+);
+alter table Personaje
+add constraint checkgenero
+check(Genero = 'F' or Genero = 'M' or Genero = 'O'),
+add constraint checkpuntos
+check(Puntosdeexperiencia>=0);
+
+create table if not exists Heroeinfo(
 	Heroeid int auto_increment,
     Nombre varchar(10) not null default 'Heroe',
-    Edad int not null,
-    Genero char(1) not null,
     Clase varchar(50) not null,
     Nivel int not null default 1,
-    Puntosdeexperiencia int not null,
+    Edad int not null,
     Parejaid int,
     Activo boolean not null default false,
+    foreign key (Heroeid) references Personaje(Personajeid),
+    foreign key (Parejaid) references Personaje(Personajeid),
     primary key (Heroeid)
 );
 
-alter table Heroes
+alter table Heroeinfo
 add constraint checkedad
 check(Edad between 10 and 999),
-add constraint checkgenero
-check(Genero = 'F' or Genero = 'M' or Genero = 'O'),
 add constraint checknivel
 check(Nivel between 1 and 100),
-add constraint Pareja
-foreign key (Parejaid) references Heroes(Heroeid),
 add constraint checkClase
 check(Clase regexp '^[^0-9]+$');
 
-create table Heroeestadisticas(
-	Heroeid int,
-	Nivel int,
+create table Estadistica(
+	Estadisticaid int,
     Ataque int default 0,
     Defensa int default 0,
     Velocidad int default 0,
     Podermagico int default 0,
     Espiritu int default 0,
     Suerte int default 0,
-    foreign key (Heroeid) references Heroes(Heroeid),
+    primary key (Estadisticaid)
+);
+
+create table Heroeestadisticas(
+	Heroeid int,
+	Nivel int,
+    Estadisticaid int not null,
+    foreign key (Estadisticaid) references Estadistica(Estadisticaid),
+    foreign key (Heroeid) references Heroeinfo(Heroeid),
     primary key (Heroeid,Nivel)
 );
 
@@ -91,7 +114,7 @@ create table Heroeobjetos(
 	Heroeid int,
     Objetoid int,
     Cantidad int default 0,
-    foreign key (Heroeid) references Heroes(Heroeid),
+    foreign key (Heroeid) references Heroeinfo(Heroeid),
     foreign key (Objetoid) references Objetos(Objetoid),
     primary key (Heroeid,Objetoid)
 );
@@ -104,32 +127,23 @@ create table HeroeMagia(
     Heroeid int,
     Magiaid char(8),
     NivelHechizo int default 0,
-    foreign key (Heroeid) references Heroes(Heroeid),
+    foreign key (Heroeid) references Heroeinfo(Heroeid),
     foreign key (Magiaid) references Magia(Magiaid),
     primary key(Heroeid,Magiaid)
 );
 
-create table Enemigos(
+create table Enemigoinfo(
 	Enemigoid int auto_increment,
     Nombreenemigo varchar(10) not null default 'Enemigo',
-    Genero varchar(1) null,
-    Puntosdeexperiencia int not null,
+    foreign key (Enemigoid) references Personaje(Personajeid),
     primary key (Enemigoid)
 );
 
-alter table Enemigos
-add constraint checkgeneroEnemigos
-check(Genero = 'F' or Genero = 'M' or Genero = 'O');
-
 create table Enemigostadisticas(
 	Enemigoid int,
-    Ataque int default 0,
-    Defensa int default 0,
-    Velocidad int default 0,
-    Podermagico int default 0,
-    Espiritu int default 0,
-    Suerte int default 0,
-    foreign key (Enemigoid) references Enemigos(Enemigoid),
+    Estadisticaid int,
+    foreign key (Estadisticaid) references Estadistica(Estadisticaid),
+    foreign key (Enemigoid) references Enemigoinfo(Enemigoid),
     primary key (Enemigoid)
 );
 
@@ -142,7 +156,7 @@ create table Enemigoclases(
 create table Clasedeenemigo(
 	Enemigoclaseid int,
     Enemigoid int,
-    foreign key (Enemigoid) references Enemigos(Enemigoid),
+    foreign key (Enemigoid) references Enemigoinfo(Enemigoid),
     foreign key (Enemigoclaseid) references Enemigoclases(Enemigoclaseid),
     primary key(Enemigoid,Enemigoclaseid)
 );
@@ -160,24 +174,20 @@ alter table Debilidades
 add constraint checkdanio
 check (danio>0);
 
-CREATE TABLE EnemigoMagia(
+create table EnemigoMagia(
 	Enemigoid int,
     Magiaid char(8),
-    foreign key (Enemigoid) references Enemigos(Enemigoid),
+    foreign key (Enemigoid) references Enemigoinfo(Enemigoid),
     foreign key (Magiaid) references Magia(Magiaid),
     primary key(Enemigoid,Magiaid)
     
 );
 
-alter table Enemigos
-add constraint checkpuntos
-check(Puntosdeexperiencia>=0);
-
 create table Enemigoobjetos(
 	Enemigoid int,
     Objetoid int,
     probabilidad INT,
-    foreign key (Enemigoid) references Enemigos(Enemigoid),
+    foreign key (Enemigoid) references Enemigoinfo(Enemigoid),
     foreign key (Objetoid) references Objetos(Objetoid),
     primary key (Enemigoid,Objetoid)
 );
@@ -188,24 +198,33 @@ check(probabilidad between 1 and 100);
 
 CREATE VIEW InventarioPesoTotal AS
 SELECT h.Heroeid, SUM(o.Peso * ho.Cantidad) AS PesoTotal
-FROM Heroes h
+FROM Heroeinfo h
 JOIN Heroeobjetos ho ON h.Heroeid = ho.Heroeid
 JOIN Objetos o ON ho.Objetoid = o.Objetoid
 GROUP BY h.Heroeid;
 
 CREATE VIEW BonusPareja AS
 SELECT h.Heroeid, h.Parejaid,
-       he.Ataque * 1.5 AS AtaqueBonus,
-       he.Defensa * 1.5 AS DefensaBonus
-FROM Heroes h
+       e.Ataque * 1.5 AS AtaqueBonus,
+       e.Defensa * 1.5 AS DefensaBonus
+FROM Heroeinfo h
 JOIN Heroeestadisticas he ON h.Heroeid = he.Heroeid
+JOIN Estadistica e ON he.Estadisticaid = e.Estadisticaid
 WHERE h.Parejaid IS NOT NULL;
 
-CREATE TABLE EvolucionMagia(
+create table EvolucionMagia(
     MagiaOrigen char(8),
     NivelRequerido int,
     MagiaDestino char(8),
-    FOREIGN KEY (MagiaOrigen) REFERENCES Magia(Magiaid),
-    FOREIGN KEY (MagiaDestino) REFERENCES Magia(Magiaid),
+    foreign key (MagiaOrigen) references Magia(Magiaid),
+    foreign key (MagiaDestino) references Magia(Magiaid),
     PRIMARY KEY (MagiaOrigen, NivelRequerido)
 );
+
+/*
+Recursos utilizados:
+Materiales de clase
+Video de midulive: https://www.youtube.com/watch?v=96s2i-H7e0w
+CHATGPT
+
+*/

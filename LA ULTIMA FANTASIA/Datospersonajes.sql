@@ -1,16 +1,33 @@
 use Laultimafantasia;
 
-insert ignore into Heroes(Nombre, Edad, Genero, Clase, Nivel, Puntosdeexperiencia, Activo) 
+insert ignore into Personaje (Rolid, Genero, Puntosdeexperiencia)
 values
-('Mold', 20, 'M', 'Caballero', 1, 0, true),
-('Erde', 18, 'F', 'Mago', 1, 0, true),
-('Hola', 20, 'M', 'Paladin', 1, 0, true);
+(1, 'M', 0),  -- Mold
+(1, 'F', 0),  -- Erde
+(1, 'M', 0),  -- Hola
+(2, 'M', 5000),  -- Gollum
+(2, 'F', 100000); -- Malenia
 
-insert ignore into Heroeestadisticas(Heroeid, Nivel, Ataque, Defensa, Velocidad, Podermagico, Espiritu, Suerte) 
+insert ignore into Heroeinfo (Heroeid, Nombre, Clase, Nivel, Edad, Activo)
 values
-(1, 1, 15, 10, 12, 5, 7, 3),  -- Mold
-(2, 1, 8, 6, 10, 12, 9, 4),   -- Erde
-(3, 1, 8, 6, 10, 12, 9, 4);   -- Hola
+(1, 'Mold', 'Caballero', 1, 20, true),
+(2, 'Erde', 'Mago', 1, 18, true),
+(3, 'Hola', 'Paladin', 1, 20, true);
+
+
+-- Insertar estadísticas base
+insert ignore into Estadistica (Estadisticaid, Ataque, Defensa, Velocidad, Podermagico, Espiritu, Suerte)
+values
+(1, 15, 10, 12, 5, 7, 3),  -- Mold
+(2, 8, 6, 10, 12, 9, 4),   -- Erde
+(3, 8, 6, 10, 12, 9, 4);   -- Hola
+
+-- Relacionar héroes con sus estadísticas
+insert ignore into Heroeestadisticas (Heroeid, Nivel, Estadisticaid)
+values
+(1, 1, 1),
+(2, 1, 2),
+(3, 1, 3);
 
 insert ignore into Heroeobjetos(Heroeid, Objetoid, Cantidad) 
 values
@@ -23,13 +40,14 @@ values
 (1, '00000001', 0),  -- Mold tiene Chispa
 (2, '00000004', 0);  -- Erde tiene Hielo
 
-insert ignore into Enemigos(Nombreenemigo, Genero, Puntosdeexperiencia) 
+-- Insertar en Enemigoinfo
+insert ignore into Enemigoinfo (Enemigoid, Nombreenemigo)
 values
-('Gollum', 'M', 5000),
-('Malenia', 'F', 100000);
+(4, 'Gollum'),
+(5, 'Malenia');
 
-insert ignore into Clasedeenemigo(Enemigoclaseid, Enemigoid) 
+insert ignore into Clasedeenemigo(Enemigoid,Enemigoclaseid) 
 values
-(5, 1),  -- Gollum es Humano
-(2, 2),	 -- Malenia es Demonio
-(6,2 );  -- Malenia es Semidiosa
+(4, 5),  -- Gollum es Humano
+(5, 2),	 -- Malenia es Demonio
+(5, 6);  -- Malenia es Semidiosa
