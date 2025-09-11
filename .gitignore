@@ -1,0 +1,23 @@
+# MySQL and Database related files
+*.sql             # SQL dump files
+*.sql.gz          # Compressed SQL dump files
+*.sqlite3         # SQLite database files (if used for local development)
+*.db              # Generic database files
+
+# Configuration files that might contain sensitive database credentials
+# Be specific if you know your framework's config file names, e.g.:
+# config/database.yml
+# .env
+# settings.py
+# application.properties
+# database.ini
+# db_config.php
+# .env.local
+# .env.*.local
+# .env.development.local
+# .env.test.local
+# .env.production.local
+
+# Log files
+*.log
+logs/
