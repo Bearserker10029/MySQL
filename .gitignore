@@ -3,6 +3,7 @@
 *.sql.gz          # Compressed SQL dump files
 *.sqlite3         # SQLite database files (if used for local development)
 *.db              # Generic database files
+*.bak
 
 # Configuration files that might contain sensitive database credentials
 # Be specific if you know your framework's config file names, e.g.:
